@@ -1,0 +1,28 @@
+{
+  "name": "sc-search",
+  "version": "0.0.1",
+  "authors": [
+    "Horacio Ibrahim <horacioibrahim@gmail.com>"
+  ],
+  "description": "sc-search is an custom element to generic searches based in a preset model.",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "sc-search"
+  ],
+  "main": "sc-search.html",
+  "license": "MIT",
+  "homepage": "https://github.com/siscomando/sc-search/",
+  "ignore": [
+    "/.*",
+    "/tests/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^0.5.4",
+    "core-ajax": "Polymer/core-ajax"
+  },
+  "devDependencies": {
+    "web-component-tester": "*"
+  }
+}

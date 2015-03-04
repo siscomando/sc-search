@@ -1,0 +1,140 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-ajax/core-ajax.html">
+<link rel="import" href="../font-roboto/roboto.html">
+<link rel="import" href="../core-toolbar/core-toolbar.html">
+<link rel="import" href="../paper-elements/paper-elements.html">
+<link rel="import" href="../core-icon/core-icon.html">
+
+<!--
+sc-search is an custom element to generic searches based in a preset model. That
+is required core-ajax.
+
+##### Example
+
+    <sc-search></sc-search>
+
+@element sc-search
+@blurb Element providing the search to the sisComando app.
+@status alpha
+@homepage http://github.com/siscomando/sc-search
+-->
+<polymer-element class="core-header" name="sc-search" attributes="notitle author url method">
+
+  <template>
+    <link rel="stylesheet" href="sc-search.css">
+    <core-ajax auto url="{{url}}" handleAs="json"
+    response="{{response}}"
+    params='{"s":""}'
+    method="{{ method ? method : 'GET'}}">
+    </core-ajax>
+    <!-- init element sc-search -->
+    <div class="container-header" vertical layout>
+      <core-toolbar class="sc-search-input {{ displaySearch ? 'on-search' : '' }}">
+        <paper-icon-button id="searchbutton" icon="search" on-tap={{onDisplaySearch}}></paper-icon-button>
+        <paper-input-decorator id="parentsearch" label="Pesquise qualquer coisa..." flex>
+          <input id="search" is="core-input" name="s" on-blur={{onDisplaySearch}}
+          on-keyup="{{aja}}">
+        </paper-input-decorator>
+      </core-toolbar>
+    </div>
+  </template>
+
+  <script>
+
+    Polymer({
+      /**
+       * The `author` attribute sets an initial author
+       *
+       * @attribute author
+       * @type string
+       * @default 'Horacio Ibrahim'
+       */
+      author: 'Horacio Ibrahim',
+      /**
+       * The `results` attribute sets the returned data from url.
+       *
+       * @attribute results
+       * @type Object
+       * @default null
+       */
+      results: null,      
+
+      publish: {
+          displaySearch: {value: false, reflect: true},
+          /**
+           * The `containers` attribute sets the containers from retuned JSON.
+           *
+           * @attribute containers
+           * @type Object
+           * @default []
+           */
+          containers: [],           
+      },
+      /* the best place to the constructor for array or object */
+      created: function() {
+        // initialize but it not is turned public to use by users of the element
+        // to turn public to use attributes or publish.
+      },
+      onDisplaySearch: function(e, detail, sender) {
+        this.displaySearch = !this.displaySearch;
+        e.stopPropagation();
+      },
+      displaySearchChanged: function(){ // suffix functionally
+        this.$.search.focus();
+      },
+      responseChanged: function() {
+        this.results = this.response;
+        this.setupObjects(this.results);
+        console.log(this.containers);
+      },
+      ready: function() {
+        // Ready is a lifecycle callback.
+        // You can do setup work in here.
+        // More info: http://www.polymer-project.org/docs/polymer/polymer.html#lifecyclemethods
+        // simple test alert(this.issueInfo.register);
+      },
+      /**
+       * The `setupObjects` method sets the containers of the results. The 
+       * result/JSON must to return grouped data by type like messages, files, 
+       * people. This method permits to introspect in results. 
+       *
+       * @method setupObjects
+       * @type Object
+       */      
+      setupObjects: function(results) {
+         this.containers = [];
+         for(var i=0; i<results.length; i++) {
+           var namespace = results[i];
+           for(var propName in namespace) {
+              if(typeof(namespace[propName]) != "undefined") {
+                 this.containers.push(propName)
+              }
+           }       
+         }
+      },
+      /**
+       * The `hasContainer` is useful to introspect in the results within containers.
+       *
+       *    Usage:
+       *
+       *        hasContainer(container) -> true|false
+       * @method hasContainer
+       * @type boolean
+       */       
+      hasContainer: function(container) {
+        var has = this.containers.indexOf(container);
+        if (has === -1) {
+          return false;
+        } else {
+          return true;
+        }
+      },
+      getResults: function(e) {
+
+      },
+
+    });
+
+  </script>
+
+</polymer-element>
