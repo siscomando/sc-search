@@ -11,7 +11,7 @@ is required core-ajax.
 
 ##### Example
 
-    <sc-search></sc-search>
+    <sc-search url="http://api.randomuser.me/"></sc-search>
 
 @element sc-search
 @blurb Element providing the search to the sisComando app.
@@ -22,7 +22,8 @@ is required core-ajax.
 
   <template>
     <link rel="stylesheet" href="sc-search.css">
-    <core-ajax auto url="{{url}}" handleAs="json"
+    <core-ajax id="coreAjax" 
+     url="{{url}}" handleAs="json"
     response="{{response}}"
     params='{"s":""}'
     method="{{ method ? method : 'GET'}}">
@@ -33,7 +34,7 @@ is required core-ajax.
         <paper-icon-button id="searchbutton" icon="search" on-tap={{onDisplaySearch}}></paper-icon-button>
         <paper-input-decorator id="parentsearch" label="Pesquise qualquer coisa..." flex>
           <input id="search" is="core-input" name="s" on-blur={{onDisplaySearch}}
-          on-keyup="{{aja}}">
+          on-keyup="{{getSearch}}" value="">
         </paper-input-decorator>
       </core-toolbar>
     </div>
@@ -42,6 +43,23 @@ is required core-ajax.
   <script>
 
     Polymer({
+       /**
+       * Fired when a response is received.
+       *
+       *    Usage:
+       *
+       *    search = document.querySelector('sc-search');
+       * 
+       *    search.addEventListener('sc-response', 
+       *        function(e){ 
+       *            console.log(e.detail.response['SCOPE'])
+       *         })
+       *
+       *    Where SCOPE can to be any scope that grouping by returned objects as 
+       *    messages, files, people, issues. 
+       *
+       * @event sc-response
+       */      
       /**
        * The `author` attribute sets an initial author
        *
@@ -49,26 +67,9 @@ is required core-ajax.
        * @type string
        * @default 'Horacio Ibrahim'
        */
-      author: 'Horacio Ibrahim',
-      /**
-       * The `results` attribute sets the returned data from url.
-       *
-       * @attribute results
-       * @type Object
-       * @default null
-       */
-      results: null,      
-
+      author: 'Horacio Ibrahim', 
       publish: {
-          displaySearch: {value: false, reflect: true},
-          /**
-           * The `containers` attribute sets the containers from retuned JSON.
-           *
-           * @attribute containers
-           * @type Object
-           * @default []
-           */
-          containers: [],           
+          displaySearch: {value: false, reflect: true},        
       },
       /* the best place to the constructor for array or object */
       created: function() {
@@ -83,9 +84,19 @@ is required core-ajax.
         this.$.search.focus();
       },
       responseChanged: function() {
-        this.results = this.response;
-        this.setupObjects(this.results);
-        console.log(this.containers);
+          res = this.response;
+          containers = {};
+          if (!(res === null)) {
+            for(var i=0; i<res.length; i++) {
+              var object = res[i];
+              for(var propName in object) {
+                if(typeof(object[propName] != 'undefined')) {
+                  containers[propName] = object[propName];
+                }
+              }
+            }   
+          }   
+          this.fire('sc-response', {response: containers});
       },
       ready: function() {
         // Ready is a lifecycle callback.
@@ -94,45 +105,23 @@ is required core-ajax.
         // simple test alert(this.issueInfo.register);
       },
       /**
-       * The `setupObjects` method sets the containers of the results. The 
-       * result/JSON must to return grouped data by type like messages, files, 
-       * people. This method permits to introspect in results. 
+       * The `getSearch` makes of the requests for target URL when the input#search
+       * is changed.
        *
-       * @method setupObjects
+       * @method getSearch
        * @type Object
-       */      
-      setupObjects: function(results) {
-         this.containers = [];
-         for(var i=0; i<results.length; i++) {
-           var namespace = results[i];
-           for(var propName in namespace) {
-              if(typeof(namespace[propName]) != "undefined") {
-                 this.containers.push(propName)
-              }
-           }       
-         }
+       */         
+      getSearch: function(e) {
+        var threshold = 3; // minimal qtd chars to make requests
+        var ajax = this.$.coreAjax;
+        var term = this.$.search.value;
+        var params = JSON.parse(ajax.params);
+        params.s = term
+        if (term.length >= threshold) {
+          ajax.params = JSON.stringify(params);
+          ajax.go();
+          }
       },
-      /**
-       * The `hasContainer` is useful to introspect in the results within containers.
-       *
-       *    Usage:
-       *
-       *        hasContainer(container) -> true|false
-       * @method hasContainer
-       * @type boolean
-       */       
-      hasContainer: function(container) {
-        var has = this.containers.indexOf(container);
-        if (has === -1) {
-          return false;
-        } else {
-          return true;
-        }
-      },
-      getResults: function(e) {
-
-      },
-
     });
 
   </script>
