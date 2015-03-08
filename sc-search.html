@@ -30,11 +30,12 @@ is required core-ajax.
     <!-- init element sc-search -->
     <div class="container-header" vertical layout>
       <core-toolbar class="sc-search-input {{ displaySearch ? 'on-search' : '' }}">
-        <paper-icon-button id="searchbutton" icon="search" on-tap={{onDisplaySearch}}></paper-icon-button>
+        <paper-icon-button id="menu" icon="menu" on-tap={{toogleMenu}}></paper-icon-button>
         <paper-input-decorator id="parentsearch" label="Pesquise qualquer coisa..." flex>
           <input id="search" is="core-input" name="s" on-blur={{onDisplaySearch}}
           on-keyup="{{getSearch}}" value="">
         </paper-input-decorator>
+        <paper-icon-button id="searchbutton" icon="search" on-tap={{onDisplaySearch}}></paper-icon-button>
       </core-toolbar>
     </div>
   </template>
