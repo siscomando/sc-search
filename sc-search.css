@@ -43,6 +43,9 @@ core-toolbar paper-icon-button {
   color: #000;
   outline: none;
 }
+#menu {
+  display: none;
+}
 /*  paper input decorator custom styling */
 paper-input-decorator /deep/ .unfocused-underline {
   /* line color when the input is unfocused */
@@ -71,3 +74,10 @@ paper-input-decorator /deep/ :-ms-input-placeholder {
     display: block;
   }
 }
+
+@media (max-width: 640px) {
+  #menu {
+    display: inline;
+  }
+}
+

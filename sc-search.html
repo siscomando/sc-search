@@ -105,6 +105,15 @@ is required core-ajax.
         // simple test alert(this.issueInfo.register);
       },
       /**
+       * The `toogleMenu` toggle drawer
+       *
+       * @method toogleMenu
+       */        
+      toogleMenu: function() {
+          var coreDrawer = document.querySelector('core-drawer-panel');
+          coreDrawer.togglePanel();
+      },
+      /**
        * The `getSearch` makes of the requests for target URL when the input#search
        * is changed.
        *
