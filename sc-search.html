@@ -77,7 +77,10 @@ is required core-ajax.
         // to turn public to use attributes or publish.
       },
       setIn: function() {
-        this.$.search.value = 'in: ';
+        var header = document.querySelector('sc-header');
+        if (header.style.display) {
+          this.$.search.value = 'in: ';  
+        }
       },
       unsetIn: function() {
         if (this.$.search.value == 'in: ') {
