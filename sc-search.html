@@ -3,7 +3,7 @@
 <link rel="import" href="../core-toolbar/core-toolbar.html">
 <link rel="import" href="../paper-elements/paper-elements.html">
 <link rel="import" href="../core-icon/core-icon.html">
-
+<link rel="import" href="../core-iconset/core-iconset.html">
 <!--
 sc-search is an custom element to generic searches based in a preset model. That
 is required core-ajax.
@@ -17,25 +17,36 @@ is required core-ajax.
 @status alpha
 @homepage http://github.com/siscomando/sc-search
 -->
-<polymer-element class="core-header" name="sc-search" attributes="notitle author url method">
+<polymer-element class="core-header" name="sc-search" attributes="notitle author url">
 
   <template>
     <link rel="stylesheet" href="sc-search.css">
+
     <core-ajax id="coreAjax" 
      url="{{url}}" handleAs="json"
-    response="{{response}}"
-    params='{"s":"", "register":""}'
-    method="{{ method ? method : 'GET'}}">
-    </core-ajax>
+     response="{{response}}"
+     params='{"s":"", "register":""}'
+     method="POST"
+     contenttype="application/json"
+     ></core-ajax>
+
+    <core-iconset id="sc-icons-png" src="../sc-icons/sc-icons.png" width="96" iconSize="24" 
+    icons="hashtag hashtag-red notifications notifications-red">
+    </core-iconset>  
+      
     <!-- init element sc-search -->
     <div class="container-header" vertical layout>
       <core-toolbar class="sc-search-input {{ displaySearch ? 'on-search' : '' }}">
-        <paper-icon-button id="menu" icon="menu" on-tap={{toogleMenu}}></paper-icon-button>
+        <paper-icon-button id="menu" icon="menu" on-tap="{{toogleMenu}}"></paper-icon-button>
+        <div></div>
+        <core-icon icon="search" on-tap="{{onDisplaySearch}}">
+        </core-icon>
         <paper-input-decorator id="parentsearch" label="Pesquise qualquer coisa..." flex>
-          <input id="search" is="core-input" name="s" on-blur={{onDisplaySearch}}
+          <input id="search" is="core-input" name="s" on-blur="{{onDisplaySearch}}"
           on-keyup="{{getSearch}}" on-focus="{{setIn}}" value="">
         </paper-input-decorator>
-        <paper-icon-button id="searchbutton" icon="search" on-tap={{onDisplaySearch}}></paper-icon-button>
+        <paper-icon-button icon="speaker-notes" on-tap="{{showNotifications}}"></paper-icon-button>
+        <paper-icon-button icon="sc-icons-png:hashtag" on-tap="{{showHashtags}}"></paper-icon-button>
       </core-toolbar>
     </div>
   </template>
@@ -78,8 +89,10 @@ is required core-ajax.
       },
       setIn: function() {
         var header = document.querySelector('sc-header');
-        if (header.style.display) {
-          this.$.search.value = 'in: ';  
+        if (header) {
+          if (header.style.display) {
+            this.$.search.value = 'in: ';  
+          }
         }
       },
       unsetIn: function() {
@@ -95,20 +108,8 @@ is required core-ajax.
       displaySearchChanged: function(){ // suffix functionally
         //this.$.search.focus(); this line conflicts anothers inputs
       },
-      responseChanged: function() {
-          res = this.response;
-          containers = {};
-          if (!(res === null)) {
-            for(var i=0; i<res.length; i++) {
-              var object = res[i];
-              for(var propName in object) {
-                if(typeof(object[propName] != 'undefined')) {
-                  containers[propName] = object[propName];
-                }
-              }
-            }   
-          }   
-          this.fire('sc-response', {response: containers});
+      responseChanged: function() {  
+          this.fire('sc-response', {response: this.response});
       },
       ready: function() {
         // Ready is a lifecycle callback.
@@ -127,7 +128,7 @@ is required core-ajax.
       toogleMenu: function() {
           var coreDrawer = document.querySelector('core-drawer-panel');
           coreDrawer.togglePanel();
-      },
+      },      
       /**
        * The `getSearch` makes of the requests for target URL when the input#search
        * is changed.
@@ -140,11 +141,18 @@ is required core-ajax.
         var ajax = this.$.coreAjax;
         var term = this.$.search.value;
         var params = JSON.parse(ajax.params);
-        params.s = term
-        if (term.length >= threshold) {
-          ajax.params = JSON.stringify(params);
-          ajax.go();
-          }
+        
+        data = {};
+        data['term'] = term;
+        data['register'] = params.register;
+
+        if (term.indexOf('in:') === 0) {
+          threshold = threshold * 2;
+        }
+
+        ajax.body = JSON.stringify(data);
+        ajax.go();
+
       },
       /**
        * The `changeParamRegister` change URL of the core-ajax
@@ -164,7 +172,13 @@ is required core-ajax.
               params.register = register;
               ajax.params = JSON.stringify(params);
         });
-      } 
+      },
+      showNotifications: function() {
+        location.href = '/notifications';
+      },
+      showHashtags: function() {
+        location.href = '/hashtags';
+      }      
     });
 
   </script>
