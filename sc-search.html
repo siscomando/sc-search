@@ -39,14 +39,16 @@ is required core-ajax.
       <core-toolbar class="sc-search-input {{ displaySearch ? 'on-search' : '' }}">
         <paper-icon-button id="menu" icon="menu" on-tap="{{toogleMenu}}"></paper-icon-button>
         <div></div>
-        <core-icon icon="search" on-tap="{{onDisplaySearch}}">
-        </core-icon>
         <paper-input-decorator id="parentsearch" label="Pesquise qualquer coisa..." flex>
           <input id="search" is="core-input" name="s" on-blur="{{onDisplaySearch}}"
           on-keyup="{{getSearch}}" on-focus="{{setIn}}" value="">
         </paper-input-decorator>
+        <!-- <core-icon icon="search" on-tap="{{onDisplaySearch}}">
+        </core-icon>--> 
+        <!--
         <paper-icon-button icon="speaker-notes" on-tap="{{showNotifications}}"></paper-icon-button>
         <paper-icon-button icon="sc-icons-png:hashtag" on-tap="{{showHashtags}}"></paper-icon-button>
+        -->
       </core-toolbar>
     </div>
   </template>
@@ -118,7 +120,8 @@ is required core-ajax.
         // simple test alert(this.issueInfo.register);
         // var scnavbar = document.querySelector('sc-navbar');
         var searchComponent = this;
-        this.changeParamRegister(document, 'sc-select', searchComponent)        
+        this.changeParamRegister(document, 'sc-select', searchComponent) 
+             
       },
       /**
        * The `toogleMenu` toggle drawer
