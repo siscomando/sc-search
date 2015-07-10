@@ -48,6 +48,10 @@ core-toolbar paper-icon-button {
 #menu {
  display: none;
 }
+#cleanSearch {
+  display: none;
+  opacity: 0.75;
+}
 /*  paper input decorator custom styling */
 paper-input-decorator /deep/ .unfocused-underline {
   /* line color when the input is unfocused */

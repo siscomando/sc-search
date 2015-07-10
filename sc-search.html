@@ -37,12 +37,13 @@ is required core-ajax.
     <!-- init element sc-search -->
     <div class="container-header" vertical layout>
       <core-toolbar class="sc-search-input {{ displaySearch ? 'on-search' : '' }}">
-        <paper-icon-button id="menu" icon="menu" on-tap="{{toogleMenu}}"></paper-icon-button>
+        <paper-icon-button id="menu" icon="menu" on-tap="{{toggleMenu}}"></paper-icon-button>
         <div></div>
         <paper-input-decorator id="parentsearch" label="Pesquise qualquer coisa..." flex>
           <input id="search" is="core-input" name="s" on-blur="{{onDisplaySearch}}"
-          on-keyup="{{getSearch}}" on-focus="{{setIn}}" value="">
+          on-change="{{getSearch}}" on-focus="{{setIn}}" value="">
         </paper-input-decorator>
+        <!-- <paper-icon-button id="backspace" icon="backspace" on-tap="{{resetInput}}" on-blur=""></paper-icon-button> -->
         <!-- <core-icon icon="search" on-tap="{{onDisplaySearch}}">
         </core-icon>--> 
         <!--
@@ -89,16 +90,26 @@ is required core-ajax.
         // if register/issues is selected in left bar or after
         // click in the link of the register number to change
         // the register info in the local stores.
-        this.changeParamRegister(document, 'sc-select', self)       
+        this.changeParamRegister(document, 'sc-select', self);
+
+        // to listen `hashtag-to-search` for capture at clicking 
+        // in the hashtags. This is temp workaround solution while
+        // we not have page to render results from search hashtags.
+        document.addEventListener('hashtag-to-search', function(ev){
+          self.$.search.value = ev.detail.issue;
+          self.getSearch();
+        });
       },     
       /** 
        * Method to action on-focus of the input search.
        *
       */ 
       setIn: function() {
+        // TODO this?
         var header = document.querySelector('sc-header');
+
         if (header) {
-          if (header.style.display) {
+          if (header.style.display == "block") {
             this.$.search.value = 'in: ';  
           }
         }
@@ -125,11 +136,11 @@ is required core-ajax.
           this.fire('sc-response', {response: this.response});
       },
       /**
-       * The `toogleMenu` toggle drawer. This action to butto #menu.
+       * The `toggleMenu` toggle drawer. This action to butto #menu.
        *
-       * @method toogleMenu
+       * @method toggleMenu
        */        
-      toogleMenu: function() {
+      toggleMenu: function() {
           var coreDrawer = document.querySelector('core-drawer-panel');
           coreDrawer.togglePanel();
       },      
@@ -145,14 +156,18 @@ is required core-ajax.
         var ajax = this.$.coreAjax;
         var term = this.$.search.value;
         var params = JSON.parse(ajax.params);
+        // TODO this?
+        var header = document.querySelector('sc-header');
         
         data = {};
         data['term'] = term;
         data['register'] = params.register;
 
-        /* if (term.indexOf('in:') === 0) {
-          threshold = threshold * 2;
-        } */
+        if (term.indexOf('in:') === 0) {
+          // threshold = threshold * 2;
+        } else {
+          header.style.display = "none";
+        }
 
         ajax.body = JSON.stringify(data);
         ajax.go();
@@ -181,6 +196,20 @@ is required core-ajax.
               // converts objects to JSON-like
               ajax.params = JSON.stringify(params);
         });
+      },
+      resetInput: function(){
+         this.$.search.value = '';
+      },
+      /**
+       * Shows/hide #backspace icon.
+       *
+      */
+      toggleSpacebar: function() {
+        if (this.$.backspace.style.display == "block") {
+          this.$.backspace.style.display = "none";
+        } else {
+          this.$.backspace.style.display = "block";
+        }
       },
       /** 
        * Link to notifications icon. This features is disabled.
