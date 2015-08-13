@@ -22,18 +22,19 @@ is required core-ajax.
   <template>
     <link rel="stylesheet" href="sc-search.css">
 
-    <core-ajax id="coreAjax" 
+    <core-ajax id="coreAjax"
      url="{{url}}" handleAs="json"
      response="{{response}}"
      params='{"term":"", "register":""}'
-     method="POST"
-     contenttype="application/json"
+     method="GET"
+     headers="{{ headerRequest() }}"
+     contentType="application/json"
      ></core-ajax>
 
-    <core-iconset id="sc-icons-png" src="../sc-icons/sc-icons.png" width="96" iconSize="24" 
+    <core-iconset id="sc-icons-png" src="../sc-icons/sc-icons.png" width="96" iconSize="24"
     icons="hashtag hashtag-red notifications notifications-red">
-    </core-iconset>  
-      
+    </core-iconset>
+
     <!-- init element sc-search -->
     <div class="container-header" vertical layout>
       <core-toolbar class="sc-search-input {{ displaySearch ? 'on-search' : '' }}">
@@ -41,11 +42,11 @@ is required core-ajax.
         <div></div>
         <paper-input-decorator id="parentsearch" label="Pesquise qualquer coisa..." flex>
           <input id="search" is="core-input" name="s" on-blur="{{onDisplaySearch}}"
-          on-change="{{getSearch}}" on-focus="{{setIn}}" value="">
+          on-keyup="{{getSearch}}" on-focus="{{setIn}}" value="">
         </paper-input-decorator>
         <!-- <paper-icon-button id="backspace" icon="backspace" on-tap="{{resetInput}}" on-blur=""></paper-icon-button> -->
         <!-- <core-icon icon="search" on-tap="{{onDisplaySearch}}">
-        </core-icon>--> 
+        </core-icon>-->
         <!--
         <paper-icon-button icon="speaker-notes" on-tap="{{showNotifications}}"></paper-icon-button>
         <paper-icon-button icon="sc-icons-png:hashtag" on-tap="{{showHashtags}}"></paper-icon-button>
@@ -63,17 +64,17 @@ is required core-ajax.
        *    Usage:
        *
        *    search = document.querySelector('sc-search');
-       * 
-       *    search.addEventListener('sc-response', 
-       *        function(e){ 
+       *
+       *    search.addEventListener('sc-response',
+       *        function(e){
        *            console.log(e.detail.response['SCOPE'])
        *         })
        *
-       *    Where SCOPE can to be any scope that grouping by returned objects as 
-       *    messages, files, people, issues. 
+       *    Where SCOPE can to be any scope that grouping by returned objects as
+       *    messages, files, people, issues.
        *
        * @event sc-response
-       */      
+       */
       /**
        * The `author` attribute sets an initial author
        *
@@ -81,9 +82,15 @@ is required core-ajax.
        * @type string
        * @default 'Horacio Ibrahim'
        */
-      author: 'Horacio Ibrahim', 
+      author: 'Horacio Ibrahim',
       publish: {
-          displaySearch: {value: false, reflect: true},        
+          displaySearch: {value: false, reflect: true},
+      },
+      create: function () {
+        var hasSiscomando = siscomando || false;
+        if (hasSiscomando === false) {
+          console.error("Siscomando library not found <sc-search>");
+        }
       },
       ready: function() {
         var self = this;
@@ -92,46 +99,46 @@ is required core-ajax.
         // the register info in the local stores.
         this.changeParamRegister(document, 'sc-select', self);
 
-        // to listen `hashtag-to-search` for capture at clicking 
+        // to listen `hashtag-to-search` for capture at clicking
         // in the hashtags. This is temp workaround solution while
         // we not have page to render results from search hashtags.
         document.addEventListener('hashtag-to-search', function(ev){
           self.$.search.value = ev.detail.issue;
           self.getSearch();
         });
-      },     
-      /** 
+      },
+      /**
        * Method to action on-focus of the input search.
        *
-      */ 
+      */
       setIn: function() {
         // TODO this?
         var header = document.querySelector('sc-header');
 
         if (header) {
           if (header.style.display == "block") {
-            this.$.search.value = 'in: ';  
+            this.$.search.value = 'in: ';
           }
         }
       },
-      /** 
+      /**
        * `unsetIn` removes "in" expression from input.
        *
-      */       
+      */
       unsetIn: function() {
         if (this.$.search.value == 'in: ') {
           this.$.search;
         }
-      },      
+      },
       onDisplaySearch: function(e, detail, sender) {
         this.displaySearch = !this.displaySearch;
         this.unsetIn();
         e.stopPropagation();
       },
-      /** 
+      /**
        * Returns the comments after to search the in backend.
       */
-      responseChanged: function() {  
+      responseChanged: function() {
           // this is standard return for comments in the webapp.
           this.fire('sc-response', {response: this.response});
       },
@@ -139,29 +146,24 @@ is required core-ajax.
        * The `toggleMenu` toggle drawer. This action to butto #menu.
        *
        * @method toggleMenu
-       */        
+       */
       toggleMenu: function() {
           var coreDrawer = document.querySelector('core-drawer-panel');
           coreDrawer.togglePanel();
-      },      
+      },
       /**
        * The `getSearch` makes of the requests for target URL when the input#search
        * is changed.
        *
        * @method getSearch
        * @type Object
-       */         
+       */
       getSearch: function(e) {
         // var threshold = 3; // minimal qtd chars to make requests
+        var header = document.querySelector('sc-header');
         var ajax = this.$.coreAjax;
         var term = this.$.search.value;
-        var params = JSON.parse(ajax.params);
-        // TODO this?
-        var header = document.querySelector('sc-header');
-        
-        data = {};
-        data['term'] = term;
-        data['register'] = params.register;
+        this.url = siscomando.helpers.comments.resources.getUrlToSearch(term);
 
         if (term.indexOf('in:') === 0) {
           // threshold = threshold * 2;
@@ -169,32 +171,24 @@ is required core-ajax.
           header.style.display = "none";
         }
 
-        ajax.body = JSON.stringify(data);
         ajax.go();
       },
       /**
-       * The `changeParamRegister` changes register of the core-ajax. If core-ajax's 
+       * The `changeParamRegister` changes register of the core-ajax. If core-ajax's
        * attributes auto=true the resquest is done at to change params. Rather
-       * is needs to send manually.   
+       * is needs to send manually.
        *
-       * 
+       *
        * @method changeParamRegister
        * @param source an instance that generated the event
-       * @param eventName the name of the event generated by source 
+       * @param eventName the name of the event generated by source
        * @param element the current custom element
-       */       
+       */
       changeParamRegister: function(source, event, element) {
+        var self = this;
         source.addEventListener(event, function(e){
               var register = e.detail.issue;
-              var ajax = element.$.coreAjax;
-              var params = JSON.parse(ajax.params);
-              // removes slash within register number
-              // 2015/0000123 to 20150000123
-              register = register.replace('/', '');
-              // changes objects (like dict)
-              params.register = register;
-              // converts objects to JSON-like
-              ajax.params = JSON.stringify(params);
+              self.register = register.replace('/', '');
         });
       },
       resetInput: function(){
@@ -211,20 +205,27 @@ is required core-ajax.
           this.$.backspace.style.display = "block";
         }
       },
-      /** 
+      /**
        * Link to notifications icon. This features is disabled.
        *
       */
       showNotifications: function() {
         location.href = '/notifications';
       },
-      /** 
+      /**
        * Link to show hashtags after to click icon. This features is disabled.
        *
-      */      
+      */
       showHashtags: function() {
         location.href = '/hashtags';
-      }      
+      },
+      headerRequest: function(payload) {
+        // TODO: if not exists Account in localStorage
+        var accountData = JSON.parse(window.localStorage.getItem("Account"));
+        var token = accountData.message.token;
+        var b64Token = btoa(token + ":");
+        return JSON.stringify({"Authorization": "Basic " + b64Token});
+      },
     });
 
   </script>
